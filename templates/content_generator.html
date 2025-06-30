@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>内容生成助手</title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/content_generator.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>内容生成助手</h1>
+            <p>一站式文章内容生成解决方案</p>
+        </header>
+        
+        <div class="cards-container">
+            <div class="card" onclick="window.location.href='/topic'">
+                <div class="card-icon">
+                    <i class="fas fa-lightbulb"></i>
+                </div>
+                <div class="card-title">选题专家</div>
+                <div class="card-description">帮助您找到优质的文章选题和切入点</div>
+            </div>
+            
+            <div class="card" onclick="window.location.href='/outline'">
+                <div class="card-icon">
+                    <i class="fas fa-list-ul"></i>
+                </div>
+                <div class="card-title">大纲专家</div>
+                <div class="card-description">为您的文章构建清晰的结构框架</div>
+            </div>
+            
+            <div class="card" onclick="window.location.href='/content'">
+                <div class="card-icon">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+                <div class="card-title">内容专家</div>
+                <div class="card-description">根据大纲生成高质量的文章内容</div>
+            </div>
+            
+            <div class="card" onclick="window.location.href='/image'">
+                <div class="card-icon">
+                    <i class="fas fa-images"></i>
+                </div>
+                <div class="card-title">生图专家</div>
+                <div class="card-description">为您的文章提供精美的图片提示词</div>
+            </div>
+            
+            <div class="card" onclick="window.location.href='/review'">
+                <div class="card-icon">
+                    <i class="fas fa-comment-alt"></i>
+                </div>
+                <div class="card-title">评论专家</div>
+                <div class="card-description">分析您的文章，提供改进建议</div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>© 2023 内容生成助手 - 让创作更简单</p>
+        </footer>
+    </div>
+
+    <script src="/static/js/content_generator.js"></script>
+</body>
+</html> 

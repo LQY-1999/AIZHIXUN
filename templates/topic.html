@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>选题专家 - 内容生成助手</title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/content_generator.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="back-button" onclick="window.location.href='/'">
+                <i class="fas fa-arrow-left"></i>
+            </div>
+            <h1>选题专家</h1>
+        </header>
+        
+        <div class="content-container">
+            <div class="input-form">
+                <div class="input-group">
+                    <label for="topic">选题（选填，100字以内）</label>
+                    <textarea id="topic" maxlength="100" rows="3" placeholder="请输入您想要撰写的大致方向或领域..."></textarea>
+                    <div class="char-count"><span id="topic-count">0</span>/100</div>
+                </div>
+                
+                <div class="input-group">
+                    <label for="angle">切入点（选填，100字以内）</label>
+                    <textarea id="angle" maxlength="100" rows="3" placeholder="请输入您希望从什么角度切入这个选题..."></textarea>
+                    <div class="char-count"><span id="angle-count">0</span>/100</div>
+                </div>
+                
+                <div class="button-container">
+                    <button id="generate-btn">立即生成</button>
+                </div>
+            </div>
+            
+            <div class="result-container" id="result-container" style="display:none;">
+                <h2>生成结果</h2>
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p>正在生成，请稍候...</p>
+                </div>
+                <div class="result-content" id="result-content"></div>
+                <div class="button-container">
+                    <button id="copy-btn"><i class="fas fa-copy"></i> 复制结果</button>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>© 2023 内容生成助手 - 让创作更简单</p>
+        </footer>
+    </div>
+
+    <script src="/static/js/topic.js"></script>
+</body>
+</html> 

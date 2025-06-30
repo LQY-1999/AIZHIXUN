@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dify智能体调用界面</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        header {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 25px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+        }
+        
+        h1 {
+            color: white;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .subtitle {
+            color: rgba(255, 255, 255, 0.85);
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        
+        .api-info {
+            background: rgba(0, 0, 0, 0.25);
+            padding: 15px 25px;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.9rem;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .api-info div {
+            margin: 5px 0;
+            display: flex;
+            align-items: center;
+        }
+        
+        .api-info i {
+            margin-right: 8px;
+            width: 20px;
+        }
+        
+        .chat-container {
+            padding: 25px;
+            height: 400px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            background: rgba(0, 0, 0, 0.15);
+        }
+        
+        .message {
+            max-width: 80%;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            border-radius: 15px;
+            position: relative;
+            animation: fadeIn 0.3s ease-out;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .user-message {
+            align-self: flex-end;
+            background: linear-gradient(135deg, #4e54c8, #8f94fb);
+            color: white;
+            border-bottom-right-radius: 5px;
+        }
+        
+        .bot-message {
+            align-self: flex-start;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border-bottom-left-radius: 5px;
+        }
+        
+        .input-area {
+            display: flex;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.25);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        input {
+            flex: 1;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 30px;
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        input:focus {
+            background: rgba(255, 255, 255, 0.25);
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
+        }
+        
+        button {
+            margin-left: 15px;
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #4e54c8, #8f94fb);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 7px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        button:active {
+            transform: translateY(1px);
+        }
+        
+        button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        button i {
+            margin-right: 8px;
+        }
+        
+        .typing-indicator {
+            display: none;
+            padding: 15px 20px;
+            background: rgba(255, 255, 255, 0.15);
+            color: rgba(255, 255, 255, 0.7);
+            border-radius: 15px;
+            align-self: flex-start;
+            margin-bottom: 20px;
+            font-style: italic;
+            width: 120px;
+        }
+        
+        .status {
+            text-align: center;
+            padding: 10px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+            background: rgba(0, 0, 0, 0.2);
+        }
+        
+        .error-message {
+            background: rgba(214, 48, 49, 0.3);
+            color: #ffd1d1;
+            padding: 12px 20px;
+            border-radius: 10px;
+            margin: 10px 0;
+            display: none;
+        }
+        
+        .debug-panel {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            display: none;
+        }
+        
+        .debug-title {
+            color: #fff;
+            margin-bottom: 10px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+        
+        .debug-content {
+            color: rgba(255, 255, 255, 0.8);
+            font-family: monospace;
+            font-size: 0.85rem;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 10px;
+            border-radius: 5px;
+            max-height: 150px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        
+        .config-section {
+            padding: 15px 25px;
+            background: rgba(0, 0, 0, 0.2);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .config-row {
+            display: flex;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+        
+        .config-label {
+            width: 120px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .config-input {
+            flex: 1;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            font-size: 0.9rem;
+            outline: none;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                border-radius: 15px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .input-area {
+                flex-direction: column;
+            }
+            
+            button {
+                margin-left: 0;
+                margin-top: 15px;
+                width: 100%;
+            }
+            
+            .message {
+                max-width: 90%;
+            }
+            
+            .api-info {
+                flex-direction: column;
+            }
+        }
+        
+        .dot-flashing {
+            position: relative;
+            width: 10px;
+            height: 10px;
+            border-radius: 5px;
+            background-color: rgba(255, 255, 255, 0.7);
+            color: rgba(255, 255, 255, 0.7);
+            animation: dotFlashing 1s infinite linear alternate;
+            animation-delay: .5s;
+            display: inline-block;
+            margin-left: 5px;
+        }
+        
+        .dot-flashing::before, .dot-flashing::after {
+            content: '';
+            display: inline-block;
+            position: absolute;
+            top: 0;
+            width: 10px;
+            height: 10px;
+            border-radius: 5px;
+            background-color: rgba(255, 255, 255, 0.7);
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .dot-flashing::before {
+            left: -15px;
+            animation: dotFlashing 1s infinite alternate;
+            animation-delay: 0s;
+        }
+        
+        .dot-flashing::after {
+            left: 15px;
+            animation: dotFlashing 1s infinite alternate;
+            animation-delay: 1s;
+        }
+        
+        @keyframes dotFlashing {
+            0% {
+                background-color: rgba(255, 255, 255, 0.7);
+            }
+            50%, 100% {
+                background-color: rgba(255, 255, 255, 0.2);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-robot"></i> Dify智能体调用界面</h1>
+            <p class="subtitle">此页面连接到您的Dify智能体服务，已修复400参数异常问题</p>
+        </header>
+        
+        <div class="config-section">
+            <div class="config-row">
+                <div class="config-label"><i class="fas fa-link"></i> API地址:</div>
+                <input type="text" class="config-input" id="apiUrl" value="http://8.148.26.204:41/v1/chat-messages">
+            </div>
+            <div class="config-row">
+                <div class="config-label"><i class="fas fa-key"></i> API密钥:</div>
+                <input type="text" class="config-input" id="apiKey" value="app-2hx1FUO9OVJMRpgQvC2RiRl0">
+            </div>
+            <div class="config-row">
+                <div class="config-label"><i class="fas fa-cog"></i> API类型:</div>
+                <select class="config-input" id="apiType">
+                    <option value="dify">Dify API</option>
+                    <option value="whaledi">WhaleDI API</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="api-info">
+            <div><i class="fas fa-info-circle"></i> 当前端点: <span id="currentEndpoint">/chat-messages</span></div>
+            <div><i class="fas fa-user"></i> 用户标识: web_user</div>
+            <div><i class="fas fa-exchange-alt"></i> 响应模式: blocking</div>
+        </div>
+        
+        <div class="chat-container" id="chatContainer">
+            <div class="bot-message message">
+                <i class="fas fa-robot"></i> 您好！我是您的Dify智能体助手。我已经修复了参数异常问题，现在可以正常工作了。请问有什么可以帮您的吗？
+            </div>
+            <div class="typing-indicator" id="typingIndicator">思考中<span class="dot-flashing"></span></div>
+        </div>
+        
+        <div class="error-message" id="errorMessage">
+            <i class="fas fa-exclamation-triangle"></i> <span id="errorText"></span>
+        </div>
+        
+        <div class="input-area">
+            <input type="text" id="userInput" placeholder="输入您的问题...">
+            <button id="sendButton">
+                <i class="fas fa-paper-plane"></i> 发送
+            </button>
+        </div>
+        
+        <div class="debug-panel" id="debugPanel">
+            <div class="debug-title" id="debugToggle">
+                <i class="fas fa-code"></i> 调试信息 <i class="fas fa-chevron-down" id="debugIcon"></i>
+            </div>
+            <div class="debug-content" id="debugContent"></div>
+        </div>
+        
+        <div class="status" id="status">
+            状态: 准备就绪 | 已修复400参数异常问题
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const chatContainer = document.getElementById('chatContainer');
+            const userInput = document.getElementById('userInput');
+            const sendButton = document.getElementById('sendButton');
+            const typingIndicator = document.getElementById('typingIndicator');
+            const statusDiv = document.getElementById('status');
+            const errorMessage = document.getElementById('errorMessage');
+            const errorText = document.getElementById('errorText');
+            const debugPanel = document.getElementById('debugPanel');
+            const debugContent = document.getElementById('debugContent');
+            const debugToggle = document.getElementById('debugToggle');
+            const debugIcon = document.getElementById('debugIcon');
+            const apiUrlInput = document.getElementById('apiUrl');
+            const apiKeyInput = document.getElementById('apiKey');
+            const currentEndpoint = document.getElementById('currentEndpoint');
+            const apiTypeSelect = document.getElementById('apiType');
+            
+            let debugVisible = false;
+            
+            // 设置API信息
+            let API_URL = 'http://8.148.26.204:41/v1/chat-messages';
+            let API_KEY = 'app-2hx1FUO9OVJMRpgQvC2RiRl0';
+            let API_TYPE = 'dify';
+            
+            // 加载API配置
+            async function loadApiConfig() {
+                try {
+                    const response = await fetch('/api/api-config');
+                    const config = await response.json();
+                    
+                    // 更新API类型选择框
+                    apiTypeSelect.innerHTML = '';
+                    Object.keys(config).forEach(key => {
+                        const option = document.createElement('option');
+                        option.value = key;
+                        option.textContent = config[key].name;
+                        apiTypeSelect.appendChild(option);
+                    });
+                    
+                    // 设置默认值
+                    apiTypeSelect.value = API_TYPE;
+                    updateApiFields();
+                } catch (error) {
+                    console.error('加载API配置失败:', error);
+                }
+            }
+            
+            // 更新API字段
+            function updateApiFields() {
+                const selectedType = apiTypeSelect.value;
+                API_TYPE = selectedType;
+                
+                if (selectedType === 'whaledi') {
+                    apiUrlInput.value = 'http://10.10.186.14:31001/knowledge/knowledgeService/api/v1/chat/completions';
+                    apiKeyInput.value = 'WhaleDI-Agent-7fc20b57f24c62fe70153616382dfbf87d38baf52dcd632fd50d4f48b871af61';
+                    currentEndpoint.textContent = '/chat/completions';
+                } else {
+                    apiUrlInput.value = 'http://8.148.26.204:41/v1/chat-messages';
+                    apiKeyInput.value = 'app-2hx1FUO9OVJMRpgQvC2RiRl0';
+                    currentEndpoint.textContent = '/chat-messages';
+                }
+                
+                API_URL = apiUrlInput.value;
+                API_KEY = apiKeyInput.value;
+            }
+            
+            // API类型切换事件
+            apiTypeSelect.addEventListener('change', updateApiFields);
+            
+            // 更新调试信息
+            function updateDebugInfo(request, response) {
+                const debugData = {
+                    timestamp: new Date().toLocaleTimeString(),
+                    request: {
+                        url: API_URL,
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${API_KEY}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: request
+                    },
+                    response: response
+                };
+                
+                debugContent.textContent = JSON.stringify(debugData, null, 2);
+                debugPanel.style.display = 'block';
+            }
+            
+            // 显示错误信息
+            function showError(message) {
+                errorText.textContent = message;
+                errorMessage.style.display = 'block';
+                setTimeout(() => {
+                    errorMessage.style.display = 'none';
+                }, 5000);
+            }
+            
+            // 添加用户消息到聊天框
+            function addUserMessage(message) {
+                const messageDiv = document.createElement('div');
+                messageDiv.classList.add('message', 'user-message');
+                messageDiv.innerHTML = `<i class="fas fa-user"></i> ${message}`;
+                chatContainer.appendChild(messageDiv);
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
+            
+            // 添加AI消息到聊天框
+            function addBotMessage(message) {
+                const messageDiv = document.createElement('div');
+                messageDiv.classList.add('message', 'bot-message');
+                messageDiv.innerHTML = `<i class="fas fa-robot"></i> ${message}`;
+                chatContainer.appendChild(messageDiv);
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
+            
+            // 显示/隐藏正在输入指示器
+            function showTypingIndicator(show) {
+                typingIndicator.style.display = show ? 'block' : 'none';
+                if (show) {
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                }
+            }
+            
+            // 调用Dify API (已修复参数问题)
+            async function callDifyAPI(userMessage) {
+                showTypingIndicator(true);
+                statusDiv.textContent = '正在与AI智能体通信...';
+                sendButton.disabled = true;
+                errorMessage.style.display = 'none';
+                
+                // 从输入框获取最新API信息
+                API_URL = apiUrlInput.value;
+                API_KEY = apiKeyInput.value;
+                API_TYPE = apiTypeSelect.value;
+                
+                // 提取端点名称用于显示
+                const endpoint = API_URL.split('/').pop() || 'chat-messages';
+                currentEndpoint.textContent = `/${endpoint}`;
+                
+                let requestBody;
+                
+                if (API_TYPE === 'whaledi') {
+                    // WhaleDI API请求格式
+                    requestBody = {
+                        chatId: Date.now().toString(),
+                        stream: false,
+                        agentlink: JSON.stringify({
+                            type: "training_config"
+                        }),
+                        messages: [
+                            {
+                                role: "user",
+                                content: userMessage
+                            }
+                        ]
+                    };
+                } else {
+                    // Dify API请求格式
+                    requestBody = {
+                    inputs: {},
+                    query: userMessage,
+                    response_mode: "blocking",
+                    user: "web_user",
+                    conversation_id: "",
+                    auto_generate_name: false
+                };
+                }
+                
+                try {
+                    const response = await fetch(API_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${API_KEY}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(requestBody)
+                    });
+                    
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        let errorMsg = `API请求失败: ${response.status}`;
+                        
+                        if (errorData && errorData.message) {
+                            errorMsg += ` - ${errorData.message}`;
+                        } else if (errorData && errorData.detail) {
+                            errorMsg += ` - ${errorData.detail}`;
+                        }
+                        
+                        throw new Error(errorMsg);
+                    }
+                    
+                    const data = await response.json();
+                    updateDebugInfo(requestBody, data);
+                    
+                    // 显示AI响应
+                    setTimeout(() => {
+                        showTypingIndicator(false);
+                        let aiMessage = '';
+                        
+                        if (API_TYPE === 'whaledi') {
+                            // WhaleDI API响应格式处理
+                            if (data.choices && data.choices.length > 0) {
+                                aiMessage = data.choices[0].message?.content || '';
+                            } else if (data.answer) {
+                                aiMessage = data.answer;
+                        } else if (data.message) {
+                                aiMessage = data.message;
+                            } else {
+                                aiMessage = "已收到响应，但未找到标准答案字段。请查看调试信息。";
+                            }
+                        } else {
+                            // Dify API响应格式处理
+                            if (data.answer) {
+                                aiMessage = data.answer;
+                            } else if (data.message) {
+                                aiMessage = data.message;
+                            } else {
+                                aiMessage = "已收到响应，但未找到标准答案字段。请查看调试信息。";
+                        }
+                        }
+                        
+                        addBotMessage(aiMessage);
+                        statusDiv.textContent = '请求成功';
+                        sendButton.disabled = false;
+                    }, 500);
+                    
+                } catch (error) {
+                    showTypingIndicator(false);
+                    addBotMessage(`请求出错: ${error.message}`);
+                    statusDiv.textContent = `错误 - ${error.message}`;
+                    sendButton.disabled = false;
+                    showError(error.message);
+                    console.error('API调用错误:', error);
+                    
+                    // 更新调试信息
+                    updateDebugInfo(requestBody, { error: error.message });
+                }
+            }
+            
+            // 发送消息处理
+            function sendMessage() {
+                const message = userInput.value.trim();
+                if (message) {
+                    addUserMessage(message);
+                    callDifyAPI(message);
+                    userInput.value = '';
+                    userInput.focus();
+                } else {
+                    showError('请输入有效的问题');
+                }
+            }
+            
+            // 事件监听
+            sendButton.addEventListener('click', sendMessage);
+            
+            userInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+            
+            debugToggle.addEventListener('click', function() {
+                debugVisible = !debugVisible;
+                debugIcon.className = debugVisible ? 'fas fa-chevron-up' : 'fas fa-chevron-down';
+                debugContent.style.display = debugVisible ? 'block' : 'none';
+            });
+            
+            // 初始焦点在输入框
+            userInput.focus();
+            
+            // 加载API配置
+            loadApiConfig();
+        });
+    </script>
+</body>
+</html>

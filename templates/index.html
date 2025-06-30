@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能训练系统</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4C6EF5;
+            --primary-light: #748FFC;
+            --primary-dark: #364FC7;
+            --secondary: #868E96;
+            --success: #51CF66;
+            --danger: #FF6B6B;
+            --warning: #FFD43B;
+            --background: #F8F9FA;
+            --surface: #FFFFFF;
+            --text: #212529;
+            --text-secondary: #868E96;
+            --border: #DEE2E6;
+            --radius: 12px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        h1 {
+            color: white;
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .cards {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .card {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 2rem;
+            width: 300px;
+            text-align: center;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: var(--text);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--primary-light) 100%);
+        }
+
+        .card i {
+            font-size: 3rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .card h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--text);
+        }
+
+        .card p {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        .card .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background: var(--primary);
+            color: white;
+            border-radius: var(--radius);
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .card .btn:hover {
+            background: var(--primary-dark);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .card {
+                width: 100%;
+                max-width: 400px;
+            }
+        }
+
+        /* 添加动画效果 */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card {
+            animation: fadeInUp 0.6s ease backwards;
+        }
+
+        .card:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+    </style>
+</head>
+<body class="bg-gradient" style="background: linear-gradient(135deg, #748FFC 0%, #4C6EF5 100%); min-height: 100vh;">
+    <div class="container py-5 position-relative">
+        <div class="position-absolute top-0 end-0 mt-3 me-4 d-flex align-items-center" id="userInfoBar" style="z-index:10;">
+            <span class="me-2"><i class="fas fa-user-circle fa-lg"></i></span>
+            <span id="currentUser" class="me-3"></span>
+            <button class="btn btn-outline-secondary btn-sm" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> 退出</button>
+        </div>
+        <h1 class="text-white text-center mb-5 display-5 fw-bold text-shadow">智能训练系统</h1>
+        <div class="row justify-content-center g-4">
+            <div class="col-12 col-md-6 col-lg-5">
+                <a href="/test-agent" class="card shadow-lg text-decoration-none h-100 animate__animated animate__fadeInUp">
+                    <div class="card-body text-center">
+                        <i class="fas fa-robot fa-3x text-primary mb-3"></i>
+                        <h2 class="h4 mb-3 fw-bold">用户训练端</h2>
+                        <p class="text-secondary mb-4">开始智能对话训练，提升业务技能和专业素养</p>
+                        <div class="btn btn-primary px-4 py-2">
+                            <i class="fas fa-arrow-right me-2"></i>进入训练
+                        </div>
+                </div>
+            </a>
+            </div>
+            <div class="col-12 col-md-6 col-lg-5">
+                <a href="/admin" class="card shadow-lg text-decoration-none h-100 animate__animated animate__fadeInUp" style="animation-delay:0.2s;">
+                    <div class="card-body text-center">
+                        <i class="fas fa-cog fa-3x text-primary mb-3"></i>
+                        <h2 class="h4 mb-3 fw-bold">系统管理端</h2>
+                        <p class="text-secondary mb-4">管理系统配置、查看历史会话记录和数据统计</p>
+                        <div class="btn btn-primary px-4 py-2">
+                            <i class="fas fa-arrow-right me-2"></i>进入管理
+                        </div>
+                </div>
+            </a>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    // 登录校验
+    (function checkLogin() {
+        const token = localStorage.getItem('token');
+        const userid = localStorage.getItem('userid');
+        const username = localStorage.getItem('username');
+        if (!token || !userid) {
+            window.location.href = '/login.html';
+        }
+        document.getElementById('currentUser').textContent = username ? `当前用户：${username}` : '';
+    })();
+    document.getElementById('logoutBtn').onclick = function() {
+        localStorage.clear();
+        window.location.href = '/login.html';
+    };
+    </script>
+</body>
+</html> 

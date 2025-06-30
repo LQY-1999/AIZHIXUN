@@ -1,0 +1,27 @@
+version: '3.8'
+services:
+  web:
+    build: .
+    container_name: zhixunv3-web
+    restart: always
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./static:/app/static
+      - ./templates:/app/templates
+      - ./agent_config.db:/app/agent_config.db
+    environment:
+      - FLASK_ENV=production
+    depends_on: []
+# 如需nginx反代可加如下内容：
+#  nginx:
+#    image: nginx:alpine
+#    container_name: zhixunv3-nginx
+#    restart: always
+#    ports:
+#      - "80:80"
+#    volumes:
+#      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+#      - ./static:/usr/share/nginx/html/static
+#    depends_on:
+#      - web 

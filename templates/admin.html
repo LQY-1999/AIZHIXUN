@@ -1,0 +1,1423 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能体配置管理</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4C6EF5;
+            --primary-light: #748FFC;
+            --primary-dark: #364FC7;
+            --secondary: #868E96;
+            --success: #51CF66;
+            --danger: #FF6B6B;
+            --warning: #FFD43B;
+            --background: #F8F9FA;
+            --surface: #FFFFFF;
+            --text: #212529;
+            --text-secondary: #868E96;
+            --border: #DEE2E6;
+            --radius: 12px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--background);
+            color: var(--text);
+            line-height: 1.6;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 2rem;
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .config-section {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow);
+        }
+
+        h2 {
+            color: var(--text);
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        h2 i {
+            color: var(--primary);
+        }
+
+        .form-row {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-row input {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-row input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(76, 110, 245, 0.1);
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: var(--radius);
+            font-weight: 600;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn i {
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--danger) 0%, #FA5252 100%);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 1rem;
+        }
+
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            background: var(--background);
+            color: var(--text);
+            font-weight: 600;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        tr:hover {
+            background: var(--background);
+        }
+
+        .action-btns {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .action-btns .btn {
+            padding: 0.5rem 1rem;
+        }
+
+        /* 添加动画效果 */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .config-section {
+            animation: fadeIn 0.3s ease;
+        }
+
+        /* 添加响应式设计 */
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+
+            .form-row {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            table {
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
+            }
+        }
+
+        /* 添加加载动画 */
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .loading::after {
+            content: '';
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--primary);
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* 添加提示框样式 */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            animation: slideIn 0.3s ease;
+            z-index: 1000;
+        }
+
+        .toast.success {
+            border-left: 4px solid var(--success);
+        }
+
+        .toast.error {
+            border-left: 4px solid var(--danger);
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* 历史会话管理样式 */
+        .history-controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(76, 110, 245, 0.1);
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .filter-btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 0.875rem;
+            background: var(--surface);
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .history-list {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .conversation-item {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 1rem;
+            margin-bottom: 1rem;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .conversation-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        }
+
+        .conversation-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .conversation-id {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .conversation-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .status-dot.active {
+            background: var(--primary);
+            box-shadow: 0 0 0 2px rgba(76, 110, 245, 0.2);
+        }
+
+        .status-dot.ended {
+            background: var(--secondary);
+        }
+
+        .conversation-time {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .conversation-config {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin: 0.5rem 0;
+        }
+
+        .config-tag {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            background: var(--background);
+            border-radius: 1rem;
+            color: var(--text-secondary);
+        }
+
+        .conversation-messages {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+            display: none;
+        }
+
+        .conversation-item.expanded .conversation-messages {
+            display: block;
+        }
+
+        .message-item {
+            padding: 0.5rem;
+            margin-bottom: 0.5rem;
+            border-radius: var(--radius);
+            font-size: 0.875rem;
+        }
+
+        .message-item.user {
+            background: rgba(76, 110, 245, 0.1);
+            margin-left: 2rem;
+        }
+
+        .message-item.agent {
+            background: var(--background);
+            margin-right: 2rem;
+        }
+
+        .message-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: var(--border);
+        }
+
+        @media (max-width: 768px) {
+            .history-controls {
+                flex-direction: column;
+            }
+
+            .filter-group {
+                justify-content: stretch;
+            }
+
+            .filter-btn {
+                flex: 1;
+            }
+        }
+
+        .nav-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #fff;
+            box-shadow: 0 2px 8px rgba(76,110,245,0.08);
+            padding: 1rem 2rem;
+            border-radius: 0 0 16px 16px;
+            margin-bottom: 2rem;
+        }
+        .nav-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #4C6EF5;
+        }
+        .nav-tabs {
+            display: flex;
+            gap: 1.5rem;
+        }
+        .nav-tab-btn {
+            background: none;
+            border: none;
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: #868E96;
+            cursor: pointer;
+            padding-bottom: 0.2rem;
+            border-bottom: 2px solid transparent;
+            transition: color 0.2s, border-color 0.2s;
+        }
+        .nav-tab-btn.active {
+            color: #4C6EF5;
+            border-bottom: 2px solid #4C6EF5;
+        }
+        .nav-user {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .tab-content { margin-bottom: 2rem; }
+    </style>
+</head>
+<body class="bg-light">
+    <div class="container py-4">
+        <h1 class="text-primary text-center mb-4 fw-bold">智能体配置管理</h1>
+        <div class="nav-bar">
+            <div class="nav-title"><i class="fas fa-cog"></i> 智训v3 后台管理</div>
+            <div class="nav-tabs">
+                <button class="nav-tab-btn" onclick="showTab('config')" id="tab-config">参数配置</button>
+                <button class="nav-tab-btn" onclick="showTab('api')" id="tab-api">API配置</button>
+                <button class="nav-tab-btn" onclick="showTab('user')" id="tab-user">用户管理</button>
+                <button class="nav-tab-btn" onclick="showTab('stats')" id="tab-stats">对话统计/日志</button>
+            </div>
+            <div class="nav-user">
+                <span id="currentUser"></span>
+                <button class="btn btn-danger" onclick="logout()"><i class="fas fa-sign-out-alt"></i> 退出</button>
+            </div>
+        </div>
+        <div class="container">
+            <!-- 参数配置管理Tab -->
+            <div class="tab-content" id="tab-config-content">
+                <h1><i class="fas fa-cog"></i> 智能体配置管理</h1>
+                
+                <!-- 练习方式配置 -->
+                <div class="config-section">
+                    <h2><i class="fas fa-tasks"></i> 练习方式管理</h2>
+                    <div class="form-row">
+                        <input type="text" id="new-lianxifangshi" placeholder="添加新练习方式">
+                        <button class="btn btn-primary" onclick="addItem('lianxifangshi')">
+                            <i class="fas fa-plus"></i>
+                            添加
+                        </button>
+                    </div>
+                    <table id="lianxifangshi-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>练习方式</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- 动态填充 -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- 业务场景配置 -->
+                <div class="config-section">
+                    <h2><i class="fas fa-building"></i> 业务场景管理</h2>
+                    <div class="form-row">
+                        <input type="text" id="new-yewuchangjing" placeholder="添加新业务场景">
+                        <button class="btn btn-primary" onclick="addItem('yewuchangjing')">
+                            <i class="fas fa-plus"></i>
+                            添加
+                        </button>
+                    </div>
+                    <table id="yewuchangjing-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>业务场景</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- 动态填充 -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- 模拟角色配置 -->
+                <div class="config-section">
+                    <h2><i class="fas fa-user"></i> 模拟角色管理</h2>
+                    <div class="form-row">
+                        <input type="text" id="new-monijuese" placeholder="添加新模拟角色">
+                        <button class="btn btn-primary" onclick="addItem('monijuese')">
+                            <i class="fas fa-plus"></i>
+                            添加
+                        </button>
+                    </div>
+                    <table id="monijuese-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>模拟角色</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                
+                <!-- 训练角色配置 -->
+                <div class="config-section">
+                    <h2><i class="fas fa-users"></i> 训练角色管理</h2>
+                    <div class="form-row">
+                        <input type="text" id="new-xunlianjuese" placeholder="添加新训练角色">
+                        <button class="btn btn-primary" onclick="addItem('xunlianjuese')">
+                            <i class="fas fa-plus"></i>
+                            添加
+                        </button>
+                    </div>
+                    <table id="xunlianjuese-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>训练角色</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                
+                <!-- 营销打法配置 -->
+                <div class="config-section">
+                    <h2><i class="fas fa-bullhorn"></i> 营销打法管理</h2>
+                    <div class="form-row">
+                        <input type="text" id="new-yingxiaodafa" placeholder="添加新营销打法">
+                        <button class="btn btn-primary" onclick="addItem('yingxiaodafa')">
+                            <i class="fas fa-plus"></i>
+                            添加
+                        </button>
+                    </div>
+                    <table id="yingxiaodafa-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>营销打法</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                
+                <!-- 示例话术配置 -->
+                <div class="config-section">
+                    <h2><i class="fas fa-comments"></i> 示例话术管理</h2>
+                    <div class="form-row">
+                        <input type="text" id="new-shilihuashu" placeholder="添加新示例话术">
+                        <button class="btn btn-primary" onclick="addItem('shilihuashu')">
+                            <i class="fas fa-plus"></i>
+                            添加
+                        </button>
+                    </div>
+                    <table id="shilihuashu-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>示例话术</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+
+                <!-- 添加历史会话管理部分 -->
+                <div class="config-section">
+                    <h2><i class="fas fa-history"></i> 历史会话管理</h2>
+                    
+                    <div class="history-controls">
+                        <div class="search-box">
+                            <input type="text" id="conversationSearch" class="form-input" placeholder="搜索历史会话...">
+                        </div>
+                        <div class="filter-group">
+                            <button class="filter-btn active" data-filter="all">全部</button>
+                            <button class="filter-btn" data-filter="active">进行中</button>
+                            <button class="filter-btn" data-filter="ended">已结束</button>
+                        </div>
+                    </div>
+
+                    <div class="history-list" id="adminHistoryList">
+                        <!-- 动态填充 -->
+                    </div>
+                </div>
+            </div>
+            <!-- API配置管理Tab -->
+            <div class="tab-content" id="tab-api-content" style="display:none;">
+                <div class="config-section">
+                    <h2><i class="fas fa-link"></i> API配置管理</h2>
+                    <div class="form-row">
+                        <select id="api-type">
+                            <option value="dify">Dify</option>
+                            <option value="whaledi">WhaleDI</option>
+                        </select>
+                        <input type="text" id="api-name" placeholder="API名称">
+                        <input type="text" id="api-url" placeholder="API地址">
+                        <input type="text" id="api-key" placeholder="API Key">
+                        <button class="btn btn-primary" onclick="addApiConfig()">
+                            <i class="fas fa-plus"></i> 添加
+                        </button>
+                    </div>
+                    <table id="api-config-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>类型</th>
+                                <th>名称</th>
+                                <th>地址</th>
+                                <th>Key</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+            <!-- 用户管理Tab -->
+            <div class="tab-content" id="tab-user-content" style="display:none;">
+                <div class="config-section">
+                    <h2><i class="fas fa-users"></i> 用户管理</h2>
+                    <table id="user-table" class="table table-hover table-bordered align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>用户名</th>
+                                <th>用户ID</th>
+                                <th>状态</th>
+                                <th>角色</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+            <!-- 对话统计/日志Tab -->
+            <div class="tab-content" id="tab-stats-content" style="display:none;">
+                <div class="config-section mb-4">
+                    <h2><i class="fas fa-chart-bar"></i> 对话统计</h2>
+                    <div class="row mb-3">
+                        <div class="col-6 col-md-3">
+                            <div class="card text-center shadow-sm">
+                                <div class="card-body">
+                                    <div class="fw-bold fs-4" id="stat-total">-</div>
+                                    <div class="text-secondary">总对话数</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="card text-center shadow-sm">
+                                <div class="card-body">
+                                    <div class="fw-bold fs-4" id="stat-users">-</div>
+                                    <div class="text-secondary">活跃用户</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <div class="card text-center shadow-sm">
+                                <div class="card-body">
+                                    <div id="stat-api-type" style="height:60px;"></div>
+                                    <div class="text-secondary">API类型分布</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card mt-3 mb-3">
+                        <div class="card-body">
+                            <div id="stat-trend" style="height:260px;"></div>
+                        </div>
+                    </div>
+                    <!-- 新增用户对话统计表格 -->
+                    <div class="card mt-3">
+                        <div class="card-body">
+                            <h5 class="mb-3"><i class="fas fa-user"></i> 用户对话统计</h5>
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-hover align-middle" id="userStatsTable">
+                                    <thead class="table-light">
+                                        <tr><th>用户ID</th><th>用户名</th><th>对话次数</th></tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="config-section">
+                    <h2><i class="fas fa-list"></i> 对话日志
+                        <button class="btn btn-sm btn-outline-success float-end" id="exportLogsBtn"><i class="fas fa-file-export"></i> 导出CSV</button>
+                    </h2>
+                    <form class="row g-2 mb-3" id="logFilterForm">
+                        <div class="col-md-3">
+                            <input type="text" class="form-control" name="userid" placeholder="用户ID">
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select" name="api_type">
+                                <option value="">全部API类型</option>
+                                <option value="dify">Dify</option>
+                                <option value="whaledi">WhaleDI</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <input type="date" class="form-control" name="start">
+                        </div>
+                        <div class="col-md-3">
+                            <input type="date" class="form-control" name="end">
+                        </div>
+                        <div class="col-md-12">
+                            <button class="btn btn-primary btn-sm" type="submit"><i class="fas fa-search"></i> 筛选</button>
+                        </div>
+                    </form>
+                    <div class="table-responsive">
+                        <table class="table table-hover table-bordered align-middle" id="logTable">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>用户ID</th>
+                                    <th>用户名</th>
+                                    <th>API类型</th>
+                                    <th>状态</th>
+                                    <th>开始时间</th>
+                                    <th>结束时间</th>
+                                    <th>问题</th>
+                                    <th>答案</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                    <nav>
+                        <ul class="pagination justify-content-center" id="logPagination"></ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 登录校验
+        (function checkLogin() {
+            const token = localStorage.getItem('token');
+            const userid = localStorage.getItem('userid');
+            const username = localStorage.getItem('username');
+            const isAdmin = localStorage.getItem('is_admin') === 'true';
+            
+            if (!token || !userid) {
+                window.location.href = '/login.html';
+                return;
+            }
+            
+            // 检查是否为管理员
+            if (!isAdmin) {
+                // 非管理员用户显示权限不足提示
+                document.body.innerHTML = `
+                    <div style="display: flex; justify-content: center; align-items: center; height: 100vh; flex-direction: column; font-family: 'Noto Sans SC', sans-serif;">
+                        <div style="text-align: center; padding: 2rem; background: white; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 400px;">
+                            <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: #FF6B6B; margin-bottom: 1rem;"></i>
+                            <h2 style="color: #212529; margin-bottom: 1rem;">权限不足</h2>
+                            <p style="color: #868E96; margin-bottom: 1.5rem;">您没有访问管理后台的权限，请联系管理员。</p>
+                            <div style="display: flex; gap: 1rem; justify-content: center;">
+                                <button onclick="window.location.href='/'" class="btn btn-primary">返回首页</button>
+                                <button onclick="logout()" class="btn btn-outline-secondary">退出登录</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+            
+            // 管理员用户正常显示
+            showCurrentUser();
+        })();
+        // axios请求自动带token和userid
+        axios.interceptors.request.use(function(config) {
+            const token = localStorage.getItem('token');
+            const userid = localStorage.getItem('userid');
+            if (token && userid) {
+                config.headers['Authorization'] = 'Bearer ' + token;
+                config.headers['Userid'] = userid;
+            }
+            return config;
+        });
+        // Tab切换时自动加载数据
+        function showTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(div => div.style.display = 'none');
+            document.getElementById(`tab-${tab}-content`).style.display = '';
+            document.querySelectorAll('.nav-tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`tab-${tab}`).classList.add('active');
+            if(tab==='user') loadUsers();
+            if(tab==='api') loadApiConfigs();
+            if(tab==='stats'){ loadStats(); loadLogs(1); loadUserStats(); }
+        }
+        // 显示提示信息
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+                ${message}
+            `;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+        
+        // 显示加载动画
+        function showLoading() {
+            const loading = document.createElement('div');
+            loading.className = 'loading';
+            document.body.appendChild(loading);
+            return loading;
+        }
+        
+        // 隐藏加载动画
+        function hideLoading(loading) {
+            loading.remove();
+        }
+        
+        // 页面加载时获取配置数据
+        window.addEventListener('DOMContentLoaded', async () => {
+            const loading = showLoading();
+            try {
+                await Promise.all([
+                    loadConfigData('lianxifangshi'),
+                    loadConfigData('yewuchangjing'),
+                    loadConfigData('monijuese'),
+                    loadConfigData('xunlianjuese'),
+                    loadConfigData('yingxiaodafa'),
+                    loadConfigData('shilihuashu')
+                ]);
+                showToast('配置数据加载成功');
+            } catch (error) {
+                showToast('配置数据加载失败', 'error');
+            } finally {
+                hideLoading(loading);
+            }
+        });
+        
+        // 加载配置数据
+        async function loadConfigData(type) {
+            try {
+                const response = await axios.get(`/api/admin/${type}`);
+                if (!response.data) {
+                    throw new Error('返回数据为空');
+                }
+                
+                const table = document.getElementById(`${type}-table`).getElementsByTagName('tbody')[0];
+                table.innerHTML = '';
+                
+                response.data.forEach(item => {
+                    const row = table.insertRow();
+                    row.insertCell(0).textContent = item.id;
+                    row.insertCell(1).textContent = item.name;
+                    
+                    const actionCell = row.insertCell(2);
+                    actionCell.innerHTML = `
+                        <div class="action-btns">
+                            <button class="btn btn-danger" onclick="deleteItem('${type}', ${item.id})">
+                                <i class="fas fa-trash"></i>
+                                删除
+                            </button>
+                        </div>
+                    `;
+                });
+                
+            } catch (error) {
+                console.error(`加载${type}配置失败:`, error);
+                throw error;
+            }
+        }
+        
+        // 添加新配置项
+        async function addItem(type) {
+            const input = document.getElementById(`new-${type}`);
+            const name = input.value.trim();
+            
+            if (!name) {
+                showToast('请输入有效的名称', 'error');
+                return;
+            }
+            
+            const loading = showLoading();
+            try {
+                await axios.post(`/api/admin/${type}`, { name });
+                input.value = '';
+                await loadConfigData(type);
+                showToast('添加成功');
+            } catch (error) {
+                console.error(`添加${type}失败:`, error);
+                showToast('添加失败，请重试', 'error');
+            } finally {
+                hideLoading(loading);
+            }
+        }
+        
+        // 删除配置项
+        async function deleteItem(type, id) {
+            if (!confirm(`确定要删除此${type}配置吗？`)) return;
+            
+            const loading = showLoading();
+            try {
+                await axios.delete(`/api/admin/${type}/${id}`);
+                await loadConfigData(type);
+                showToast('删除成功');
+            } catch (error) {
+                console.error(`删除${type}失败:`, error);
+                showToast('删除失败，请重试', 'error');
+            } finally {
+                hideLoading(loading);
+            }
+        }
+
+        // 添加历史会话管理功能
+        const historyManager = {
+            conversations: new Map(),
+            currentFilter: 'all',
+            searchQuery: '',
+
+            init() {
+                this.loadConversations();
+                this.setupEventListeners();
+            },
+
+            async loadConversations() {
+                const loading = showLoading();
+                try {
+                    // 从服务器获取会话数据
+                    const response = await axios.get('/api/admin/conversations');
+                    if (response.data.error) {
+                        throw new Error(response.data.error);
+                    }
+                    
+                    // 清空现有数据
+                    this.conversations.clear();
+                    
+                    // 添加新数据
+                    response.data.forEach(conv => {
+                        this.conversations.set(conv.id, {
+                            ...conv,
+                            timestamp: new Date(conv.timestamp),
+                            end_time: conv.end_time ? new Date(conv.end_time) : null
+                        });
+                    });
+                    
+                    this.updateHistoryList();
+                    showToast('历史会话加载成功');
+                } catch (error) {
+                    console.error('加载历史会话失败:', error);
+                    showToast('加载历史会话失败: ' + error.message, 'error');
+                } finally {
+                    hideLoading(loading);
+                }
+            },
+
+            setupEventListeners() {
+                // 搜索功能
+                const searchInput = document.getElementById('conversationSearch');
+                searchInput.addEventListener('input', (e) => {
+                    this.searchQuery = e.target.value.toLowerCase();
+                    this.updateHistoryList();
+                });
+
+                // 过滤功能
+                const filterBtns = document.querySelectorAll('.filter-btn');
+                filterBtns.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        filterBtns.forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        this.currentFilter = btn.dataset.filter;
+                        this.updateHistoryList();
+                    });
+                });
+            },
+
+            updateHistoryList() {
+                const historyList = document.getElementById('adminHistoryList');
+                let filteredConversations = Array.from(this.conversations.entries())
+                    .sort(([, a], [, b]) => b.timestamp - a.timestamp);
+
+                // 应用过滤器
+                if (this.currentFilter !== 'all') {
+                    filteredConversations = filteredConversations.filter(([, conv]) => 
+                        conv.status === this.currentFilter
+                    );
+                }
+
+                // 应用搜索
+                if (this.searchQuery) {
+                    filteredConversations = filteredConversations.filter(([, conv]) => {
+                        const searchText = [
+                            ...conv.messages.map(m => m.text),
+                            Object.values(conv.config).join(' ')
+                        ].join(' ').toLowerCase();
+                        return searchText.includes(this.searchQuery);
+                    });
+                }
+
+                // 更新列表
+                if (filteredConversations.length === 0) {
+                    historyList.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-inbox"></i>
+                            <p>暂无历史会话</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                historyList.innerHTML = '';
+                filteredConversations.forEach(([id, conv]) => {
+                    const item = document.createElement('div');
+                    item.className = 'conversation-item';
+                    
+                    const configTags = Object.entries(conv.config)
+                        .filter(([, value]) => value)
+                        .map(([key, value]) => `<span class="config-tag">${value}</span>`)
+                        .join('');
+
+                    const messages = conv.messages.map(msg => `
+                        <div class="message-item ${msg.type}">
+                            <div class="message-meta">
+                                <span>${msg.sender}</span>
+                                <span>${new Date(msg.timestamp).toLocaleTimeString()}</span>
+                            </div>
+                            <div class="message-content">${msg.text}</div>
+                        </div>
+                    `).join('');
+
+                    item.innerHTML = `
+                        <div class="conversation-header">
+                            <span class="conversation-id">会话ID: ${id}</span>
+                            <div class="conversation-status">
+                                <span class="status-dot ${conv.status}"></span>
+                                ${conv.status === 'active' ? '进行中' : '已结束'}
+                            </div>
+                        </div>
+                        <div class="conversation-time">
+                            开始时间: ${new Date(conv.timestamp).toLocaleString()}
+                            ${conv.endTime ? `<br>结束时间: ${new Date(conv.endTime).toLocaleString()}` : ''}
+                        </div>
+                        <div class="conversation-config">
+                            ${configTags}
+                        </div>
+                        <div class="conversation-messages">
+                            ${messages}
+                        </div>
+                    `;
+
+                    // 点击展开/收起对话内容
+                    item.addEventListener('click', () => {
+                        item.classList.toggle('expanded');
+                    });
+
+                    historyList.appendChild(item);
+                });
+            }
+        };
+
+        // 页面加载时初始化历史会话管理
+        window.addEventListener('DOMContentLoaded', () => {
+            historyManager.init();
+            // ... existing initialization code ...
+        });
+
+        // API配置管理
+        async function loadApiConfigs() {
+            const response = await axios.get('/api/admin/api-config');
+            const table = document.getElementById('api-config-table').getElementsByTagName('tbody')[0];
+            table.innerHTML = '';
+            response.data.forEach(item => {
+                const row = table.insertRow();
+                row.insertCell(0).textContent = item.id;
+                row.insertCell(1).textContent = item.type;
+                row.insertCell(2).textContent = item.name;
+                row.insertCell(3).textContent = item.url;
+                row.insertCell(4).textContent = item.key;
+                const actionCell = row.insertCell(5);
+                actionCell.innerHTML = `
+                    <div class="action-btns">
+                        <button class="btn btn-danger" onclick="deleteApiConfig(${item.id})">
+                            <i class="fas fa-trash"></i> 删除
+                        </button>
+                    </div>
+                `;
+            });
+        }
+
+        async function addApiConfig() {
+            const type = document.getElementById('api-type').value;
+            const name = document.getElementById('api-name').value;
+            const url = document.getElementById('api-url').value;
+            const key = document.getElementById('api-key').value;
+            await axios.post('/api/admin/api-config', {type, name, url, key});
+            showToast('API配置添加成功');
+            loadApiConfigs();
+        }
+
+        async function deleteApiConfig(id) {
+            await axios.delete(`/api/admin/api-config/${id}`);
+            showToast('API配置已删除');
+            loadApiConfigs();
+        }
+
+        window.addEventListener('DOMContentLoaded', loadApiConfigs);
+
+        // 显示当前用户
+        function showCurrentUser() {
+            const username = localStorage.getItem('username') || '';
+            document.getElementById('currentUser').textContent = username ? `当前用户：${username}` : '';
+        }
+        // 退出登录
+        function logout() {
+            localStorage.clear();
+            window.location.href = '/login.html';
+        }
+        // 用户管理加载
+        async function loadUsers() {
+            const token = localStorage.getItem('token');
+            const userid = localStorage.getItem('userid');
+            const res = await axios.get('/api/users', {headers: {Authorization: token, Userid: userid}});
+            const table = document.getElementById('user-table').getElementsByTagName('tbody')[0];
+            table.innerHTML = '';
+            res.data.forEach(u => {
+                const row = table.insertRow();
+                row.insertCell(0).textContent = u.id;
+                row.insertCell(1).textContent = u.username;
+                row.insertCell(2).textContent = u.userid;
+                row.insertCell(3).innerHTML = u.is_active ? '<span style="color:#51CF66">已激活</span>' : '<span style="color:#FF6B6B">未激活</span>';
+                row.insertCell(4).textContent = u.is_admin ? '管理员' : '普通用户';
+                const actionCell = row.insertCell(5);
+                if (!u.is_admin) {
+                    actionCell.innerHTML = `
+                        <div class="action-btns">
+                            <button class="btn btn-sm btn-primary me-1" onclick="editUser(${u.id}, ${u.is_active}, ${u.is_admin})">
+                                <i class="fas fa-edit"></i> 编辑
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteUser(${u.id})">
+                                <i class="fas fa-trash"></i> 删除
+                            </button>
+                            <button class="btn btn-sm btn-${u.is_active ? 'secondary' : 'success'}" onclick="${u.is_active ? `deactivateUser(${u.id})` : `activateUser(${u.id})`}">
+                                <i class="fas fa-${u.is_active ? 'ban' : 'check'}"></i> ${u.is_active ? '禁用' : '激活'}
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    actionCell.innerHTML = '<span style="color:#868E96">-</span>';
+                }
+            });
+        }
+        async function activateUser(id) {
+            const token = localStorage.getItem('token');
+            const userid = localStorage.getItem('userid');
+            await axios.post(`/api/users/${id}/activate`, {}, {headers: {Authorization: token, Userid: userid}});
+            showToast('用户已激活');
+            loadUsers();
+        }
+        async function deactivateUser(id) {
+            const token = localStorage.getItem('token');
+            const userid = localStorage.getItem('userid');
+            await axios.post(`/api/users/${id}/deactivate`, {}, {headers: {Authorization: token, Userid: userid}});
+            showToast('用户已禁用');
+            loadUsers();
+        }
+        async function deleteUser(id) {
+            const token = localStorage.getItem('token');
+            const userid = localStorage.getItem('userid');
+            await axios.delete(`/api/users/${id}`, {headers: {Authorization: token, Userid: userid}});
+            showToast('用户已删除');
+            loadUsers();
+        }
+        // 页面初始化
+        window.addEventListener('DOMContentLoaded', () => {
+            showCurrentUser();
+            showTab('config');
+            loadApiConfigs();
+            loadUsers();
+        });
+
+        // 对话统计/日志Tab逻辑
+        async function loadStats() {
+            const res = await axios.get('/api/admin/conversation-stats', {headers: {Authorization: 'Bearer ' + localStorage.getItem('token')}});
+            document.getElementById('stat-total').textContent = res.data.total;
+            document.getElementById('stat-users').textContent = res.data.active_users;
+            // API类型分布
+            const apiTypeChart = echarts.init(document.getElementById('stat-api-type'));
+            apiTypeChart.setOption({
+                tooltip: {},
+                series: [{
+                    type: 'pie',
+                    radius: ['50%', '80%'],
+                    label: {show: false},
+                    data: Object.entries(res.data.api_type_stats).map(([k, v]) => ({name: k, value: v}))
+                }]
+            });
+            // 趋势图
+            const trendChart = echarts.init(document.getElementById('stat-trend'));
+            trendChart.setOption({
+                tooltip: {trigger: 'axis'},
+                xAxis: {type: 'category', data: res.data.trend.map(i=>i.date)},
+                yAxis: {type: 'value'},
+                series: [{type: 'line', data: res.data.trend.map(i=>i.count), smooth: true, areaStyle: {}}]
+            });
+        }
+        // 日志表格逻辑
+        let logPage = 1, logPageSize = 20, logTotal = 0;
+        async function loadLogs(page=1) {
+            logPage = page;
+            const form = document.getElementById('logFilterForm');
+            const params = new URLSearchParams(new FormData(form));
+            params.set('page', logPage);
+            params.set('page_size', logPageSize);
+            const res = await axios.get('/api/admin/conversation-logs?' + params.toString(), {headers: {Authorization: 'Bearer ' + localStorage.getItem('token')}});
+            logTotal = res.data.total;
+            const tbody = document.querySelector('#logTable tbody');
+            tbody.innerHTML = '';
+            res.data.logs.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${row.id}</td><td>${row.userid}</td><td>${row.username}</td><td>${row.api_type}</td><td>${row.status}</td><td>${row.timestamp}</td><td>${row.end_time}</td><td>${row.question}</td><td>${row.answer}</td>`;
+                tr.style.cursor = 'pointer';
+                tr.onclick = () => showLogDetail(row);
+                tbody.appendChild(tr);
+            });
+            // 分页
+            const totalPages = Math.ceil(logTotal / logPageSize);
+            const pag = document.getElementById('logPagination');
+            pag.innerHTML = '';
+            for(let i=1;i<=totalPages;i++){
+                const li = document.createElement('li');
+                li.className = 'page-item' + (i===logPage?' active':'');
+                li.innerHTML = `<a class="page-link" href="#">${i}</a>`;
+                li.onclick = e => {e.preventDefault();loadLogs(i);};
+                pag.appendChild(li);
+            }
+        }
+        document.getElementById('logFilterForm').onsubmit = e => {e.preventDefault();loadLogs(1);};
+        document.getElementById('exportLogsBtn').onclick = async () => {
+            const form = document.getElementById('logFilterForm');
+            const params = new URLSearchParams(new FormData(form));
+            window.open('/api/admin/conversation-logs/export?' + params.toString() + '&token=' + localStorage.getItem('token'));
+        };
+
+        function editUser(id, is_active, is_admin) {
+            let html = `
+                <div id="editUserModal" class="modal" tabindex="-1" style="display:block; background:rgba(0,0,0,0.3); position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:9999;">
+                    <div class="modal-dialog" style="margin:10% auto; max-width:400px;">
+                        <div class="modal-content">
+                            <div class="modal-header"><h5 class="modal-title">编辑用户</h5></div>
+                            <div class="modal-body">
+                                <button class="btn btn-${is_active ? 'secondary' : 'success'} w-100 mb-2" onclick="${is_active ? `deactivateUser(${id})` : `activateUser(${id})`}">
+                                    ${is_active ? '禁用' : '激活'}
+                                </button>
+                                <button class="btn btn-${is_admin ? 'secondary' : 'warning'} w-100 mb-2" onclick="setUserRole(${id}, ${!is_admin})">
+                                    ${is_admin ? '设为普通用户' : '设为管理员'}
+                                </button>
+                                <button class="btn btn-info w-100" onclick="resetUserPassword(${id})">
+                                    <i class="fas fa-key"></i> 重置密码
+                                </button>
+                            </div>
+                            <div class="modal-footer">
+                                <button class="btn btn-outline-secondary" onclick="document.getElementById('editUserModal').remove()">关闭</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', html);
+        }
+
+        async function setUserRole(id, is_admin) {
+            const token = localStorage.getItem('token');
+            const userid = localStorage.getItem('userid');
+            await axios.post(`/api/users/${id}/set-role`, {is_admin}, {headers: {Authorization: token, Userid: userid}});
+            showToast('角色已更新');
+            document.getElementById('editUserModal').remove();
+            loadUsers();
+        }
+
+        async function resetUserPassword(id) {
+            if (!confirm('确定要重置该用户的密码吗？重置后密码将变为：123456')) {
+                return;
+            }
+            
+            const token = localStorage.getItem('token');
+            const userid = localStorage.getItem('userid');
+            try {
+                await axios.post(`/api/users/${id}/reset-password`, {}, {headers: {Authorization: token, Userid: userid}});
+                showToast('密码已重置为：123456');
+                document.getElementById('editUserModal').remove();
+            } catch (error) {
+                showToast('重置密码失败：' + (error.response?.data?.error || error.message), 'error');
+            }
+        }
+
+        // 在JS中补充加载用户对话统计的逻辑
+        async function loadUserStats() {
+            const res = await axios.get('/api/admin/user-conversation-stats', {headers: {Authorization: 'Bearer ' + localStorage.getItem('token')}});
+            const tbody = document.querySelector('#userStatsTable tbody');
+            tbody.innerHTML = '';
+            res.data.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${row.userid}</td><td>${row.username||''}</td><td>${row.count}</td>`;
+                tr.style.cursor = 'pointer';
+                tr.onclick = () => {
+                    document.querySelector('#logFilterForm input[name=userid]').value = row.userid;
+                    loadLogs(1);
+                };
+                tbody.appendChild(tr);
+            });
+        }
+
+        // 新增弹窗显示对话详情
+        function showLogDetail(row) {
+            let html = `<div id="logDetailModal" class="modal" tabindex="-1" style="display:block; background:rgba(0,0,0,0.3); position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:9999;">
+                <div class="modal-dialog" style="margin:5% auto; max-width:600px;">
+                    <div class="modal-content">
+                        <div class="modal-header"><h5 class="modal-title">对话详情 - ${row.id}</h5></div>
+                        <div class="modal-body" style="max-height:60vh;overflow:auto;">
+                            <div><b>用户ID：</b>${row.userid}</div>
+                            <div><b>用户名：</b>${row.username}</div>
+                            <div><b>API类型：</b>${row.api_type}</div>
+                            <div><b>状态：</b>${row.status}</div>
+                            <div><b>开始时间：</b>${row.timestamp}</div>
+                            <div><b>结束时间：</b>${row.end_time}</div>
+                            <hr>
+                            <div><b>完整对话：</b></div>
+                            <div style="background:#f8f9fa;padding:10px;border-radius:8px;">
+                                ${(row.messages||[]).map(msg => `
+                                    <div style='margin-bottom:8px;'>
+                                        <span style='font-weight:bold;color:${msg.type==='user'?'#4C6EF5':'#51CF66'}'>${msg.sender}：</span>
+                                        <span>${msg.text}</span>
+                                        <span style='color:#aaa;font-size:0.9em;margin-left:8px;'>${msg.timestamp?msg.timestamp:''}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-outline-secondary" onclick="document.getElementById('logDetailModal').remove()">关闭</button>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+            document.body.insertAdjacentHTML('beforeend', html);
+        }
+    </script>
+</body>
+</html>
